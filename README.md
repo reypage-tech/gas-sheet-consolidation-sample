@@ -1,8 +1,16 @@
 # Sheet Consolidation (Google Apps Script sample)
 
+For operations or accounting staff who copy branch spreadsheets into one sheet by hand before an ERP import.
+
+**Effect:** the hand copy-and-clean step becomes one menu run that merges the tabs, fixes SKU and date formats, and logs every skipped duplicate.
+
+![Output of a local mock run: Consolidated, Duplicates log and Run log tabs (fictional data)](demo/local_run_output.png)
+
+With the sample data, one run reads 13 rows, writes 9 and logs 4 duplicates. The image above is the actual output of `tests/local_check.js` against stubbed Sheets objects, not a live Google account. All data is fictional.
+
 ![Demo (recreated screens, sample data)](demo/demo.gif)
 
-> Sample project with fictional data. The demo GIF is a recreated screen, not a recording of a live Google account.
+The demo GIF is a recreated screen, not a recording of a live Google account.
 
 ## Problem
 Branches and departments keep their own Google Sheets. Column names differ ("SKU", "Product Code", "item_code"), dates come in different formats, and the same record is often entered in two places. Before data can move into an ERP, someone has to copy everything into one sheet and clean it by hand.
@@ -32,6 +40,7 @@ With the sample data: 13 rows read, 9 consolidated, 4 duplicate rows skipped and
 - `sample_data/*.csv`: fictional source tabs and Config
 - `tests/local_check.js`: Node logic check (no Google account needed)
 - `demo/demo.gif`: recreated screens, about 30 seconds
+- `demo/local_run_output.png`: output tables from `tests/local_check.js` (local mock run)
 
 ## Limits
 - Source tabs in separate files are supported through `spreadsheet_id`, but this path is not yet tested in real Google.
