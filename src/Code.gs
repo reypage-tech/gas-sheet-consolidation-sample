@@ -14,6 +14,8 @@ var SHEETS = {
 var STD = ['record_id', 'sku', 'date', 'item_name', 'qty', 'unit_price', 'branch', 'updated_at'];
 // Duplicate key: same SKU + same date. The row with the latest updated_at is kept.
 var KEY_FIELDS = ['sku', 'date'];
+// All date handling uses the spreadsheet time zone (File > Settings), set once per run.
+var TZ_ = 'Asia/Tokyo';
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('Consolidation')
@@ -44,6 +46,7 @@ function readConfig_(ss) {
 
 function runConsolidation() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  TZ_ = ss.getSpreadsheetTimeZone() || TZ_;
   var started = new Date();
   var stats = { read: 0, written: 0, dupes: 0, errors: 0 };
   var note = '';
@@ -137,11 +140,22 @@ function toDate_(v, format) {
   var t = s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/);
   var hh = t ? +t[1] : 0, mi = t ? +t[2] : 0, se = t && t[3] ? +t[3] : 0;
   var m = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);
-  if (m) return new Date(+m[1], +m[2] - 1, +m[3], hh, mi, se);
+  if (m) return zonedDate_(+m[1], +m[2], +m[3], hh, mi, se);
   m = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);
-  if (m) return format === 'DMY' ? new Date(+m[3], +m[2] - 1, +m[1], hh, mi, se) : new Date(+m[3], +m[1] - 1, +m[2], hh, mi, se);
+  if (m) return format === 'DMY' ? zonedDate_(+m[3], +m[2], +m[1], hh, mi, se) : zonedDate_(+m[3], +m[1], +m[2], hh, mi, se);
   var d = new Date(s);
   return isNaN(d) ? null : d;
+}
+
+/** Builds the instant for a wall-clock time in the spreadsheet time zone (not the script time zone). */
+function zonedDate_(y, mo, d, hh, mi, se) {
+  var guess = new Date(Date.UTC(y, mo - 1, d, hh, mi, se));
+  for (var i = 0; i < 2; i++) {
+    var shown = Utilities.formatDate(guess, TZ_, 'yyyy-MM-dd HH:mm:ss').split(/[- :]/).map(Number);
+    var diff = Date.UTC(shown[0], shown[1] - 1, shown[2], shown[3], shown[4], shown[5]) - Date.UTC(y, mo - 1, d, hh, mi, se);
+    guess = new Date(guess.getTime() - diff);
+  }
+  return guess;
 }
 
 /** Keeps the row with the latest updated_at per SKU + date. Others are returned as removed. */
@@ -161,7 +175,7 @@ function dedupe_(records) {
 }
 
 function dayKey_(d) {
-  return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  return Utilities.formatDate(d, TZ_, 'yyyy-MM-dd');
 }
 
 function writeOutput_(ss, rows) {

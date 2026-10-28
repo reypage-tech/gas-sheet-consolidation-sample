@@ -8,9 +8,9 @@ For operations or accounting staff who copy branch spreadsheets into one sheet b
 
 With the sample data, one run reads 13 rows, writes 9 and logs 4 duplicates. The image above is the actual output of `tests/local_check.js` against stubbed Sheets objects, not a live Google account. All data is fictional.
 
-![Demo (recreated screens, sample data)](demo/demo.gif)
+![Demo (real Google Sheets file, fictional data)](demo/demo.gif)
 
-The demo GIF is a recreated screen, not a recording of a live Google account.
+Recorded in a real Google Sheets file with fictional data (one spreadsheet, tabs in the same file). Reading from another file by ID has not been tested live yet.
 
 ## Problem
 Branches and departments keep their own Google Sheets. Column names differ ("SKU", "Product Code", "item_code"), dates come in different formats, and the same record is often entered in two places. Before data can move into an ERP, someone has to copy everything into one sheet and clean it by hand.
@@ -30,6 +30,8 @@ Branches and departments keep their own Google Sheets. Column names differ ("SKU
 ## Setup
 1. Create a Google Sheet and import the CSVs in `sample_data/` as tabs named `North Branch`, `South Branch`, `Warehouse` (and `Config` from `config.csv`, or use the menu item *Create Config sheet template*).
 2. Extensions > Apps Script. Paste `src/Code.gs`; replace the manifest with `src/appsscript.json` (or use `clasp push`).
+   シートの時刻を合わせる: スプレッドシートの「ファイル > 設定」で、タイムゾーンを「(GMT+09:00) 東京」(Asia/Tokyo) にして保存します。日付はこのシートの時刻で読み書きするため、別の地域のままだと表示がその地域の日付になります。
+   日付の表示の形は地域の設定で変わります。そろえるのはタイムゾーンだけで構いません。
 3. Reload the sheet. Use **Consolidation > Run consolidation** and approve the permission prompt.
 4. Separate files (optional): put the source file ID in Config `spreadsheet_id`. Because of this, `appsscript.json` requests the full `spreadsheets` scope, so Google's authorization screen asks for access to spreadsheets you can open, not only this file. If all sources are in one file, you can switch the scope back to `spreadsheets.currentonly`.
 
@@ -39,7 +41,7 @@ With the sample data: 13 rows read, 9 consolidated, 4 duplicate rows skipped and
 - `src/Code.gs`, `src/appsscript.json`: the script
 - `sample_data/*.csv`: fictional source tabs and Config
 - `tests/local_check.js`: Node logic check (no Google account needed)
-- `demo/demo.gif`: recreated screens, about 30 seconds
+- `demo/demo.gif`: 5 screenshots of a real Google Sheets run with fictional data, 10 seconds
 - `demo/local_run_output.png`: output tables from `tests/local_check.js` (local mock run)
 
 ## Limits
