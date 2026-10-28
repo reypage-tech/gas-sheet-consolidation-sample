@@ -4,6 +4,8 @@ For operations or accounting staff who copy branch spreadsheets into one sheet b
 
 **Effect:** the hand copy-and-clean step becomes one menu run that merges the tabs, fixes SKU and date formats, and logs every skipped duplicate.
 
+**日本語：** 媒体ごとに列名や日付の形がちがう表を、コードを変えずに設定（Config）だけで1枚にまとめ、重なった行は消さずに記録します。広告3媒体の書き出し（架空）での例は「[広告レポートでの例](#広告レポートでの例日本語)」にあります。
+
 ![Output of a local mock run: Consolidated, Duplicates log and Run log tabs (fictional data)](demo/local_run_output.png)
 
 With the sample data, one run reads 13 rows, writes 9 and logs 4 duplicates. The image above is the output of the local test `tests/local_check.js` (stubbed Sheets objects). The GIF below is a run in a real Google Sheets file and shows the same counts: 13 read, 9 written, 4 duplicates, 0 errors. All data is fictional.
@@ -11,6 +13,17 @@ With the sample data, one run reads 13 rows, writes 9 and logs 4 duplicates. The
 ![Demo (real Google Sheets file, fictional data)](demo/demo.gif)
 
 Recorded in a real Google Sheets file with fictional data (one spreadsheet, tabs in the same file). Reading from another file by ID has not been tested live yet.
+
+## 広告レポートでの例（日本語）
+
+![広告3媒体の書き出しを1枚にまとめた結果（模擬環境での出力）](demo/ads_local_output.png)
+
+Google広告・Meta広告・Yahoo広告の書き出しを想定した架空の表（`sample_data/ads/`）を、`sample_data/ads/config_ads.csv` の設定だけで1枚にまとめた例です。`src/Code.gs` は変えていません。画像は、Google のサービスを偽物に置き換えた模擬環境で `node tests/ads_demo.js` を実行したときの実際の出力です（実行日時は 2026-10-28 10:00 日本時間に固定）。この広告データは、まだ本物の Google スプレッドシートでは実行していません。
+
+- 列名のちがい（「費用」「amount_spent」「コスト」など）は Config で同じ列に当てています。在庫向けの標準列をそのまま使い、キャンペーンIDを `sku`、クリック数を `qty`、費用を `unit_price` に入れています
+- キャンペーンIDの書き方のちがい（`gs 101`、`MT_201`、`YS301`）は `GS-101` の形にそろえます。日付は媒体ごとの形（年月日・月日年）を読み分けます。「¥18,400」のような記号やカンマは外して数にします
+- 10行を読み、8行にまとめ、重なり2行を Duplicates log に記録しました。Google広告の10/21分は2回書き出されたため新しい方を残し、Yahoo広告は同じ行が2回入っていたため先に読んだ方を残しています。理由の欄はスクリプトの英語のままです
+- Google上での確かめ方：`sample_data/ads/` の4つのCSVを「Config」「Google広告」「Meta広告」「Yahoo広告」のタブとして読み込み、メニュー **Consolidation > Run consolidation** を実行して、Run log が読んだ行10・書いた行8・重なり2になるかを見ます
 
 ## Problem
 Branches and departments keep their own Google Sheets. Column names differ ("SKU", "Product Code", "item_code"), dates come in different formats, and the same record is often entered in two places. Before data can move into an ERP, someone has to copy everything into one sheet and clean it by hand.
@@ -41,6 +54,7 @@ With the sample data: 13 rows read, 9 consolidated, 4 duplicate rows skipped and
 - `src/Code.gs`, `src/appsscript.json`: the script
 - `sample_data/*.csv`: fictional source tabs and Config
 - `tests/local_check.js`: Node logic check (no Google account needed)
+- `sample_data/ads/`, `tests/ads_demo.js`, `demo/ads_local_output.png`: fictional ad-platform exports merged with Config only (local mock run, Japanese)
 - `demo/demo.gif`: 5 screenshots of a real Google Sheets run with fictional data, 10 seconds
 - `demo/local_run_output.png`: output tables from `tests/local_check.js` (local mock run)
 
