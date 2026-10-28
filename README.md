@@ -6,7 +6,7 @@ For operations or accounting staff who copy branch spreadsheets into one sheet b
 
 ![Output of a local mock run: Consolidated, Duplicates log and Run log tabs (fictional data)](demo/local_run_output.png)
 
-With the sample data, one run reads 13 rows, writes 9 and logs 4 duplicates. The image above is the actual output of `tests/local_check.js` against stubbed Sheets objects, not a live Google account. All data is fictional.
+With the sample data, one run reads 13 rows, writes 9 and logs 4 duplicates. The image above is the output of the local test `tests/local_check.js` (stubbed Sheets objects). The GIF below is a run in a real Google Sheets file and shows the same counts: 13 read, 9 written, 4 duplicates, 0 errors. All data is fictional.
 
 ![Demo (real Google Sheets file, fictional data)](demo/demo.gif)
 
